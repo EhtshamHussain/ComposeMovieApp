@@ -11,6 +11,7 @@ import com.example.movieapp.RoomDatabase.dbModels.Authentication
 //import com.example.movieapp.RoomDatabase.dbModels.Authentication
 import com.example.movieapp.RoomDatabase.dbModels.Booking
 import com.example.movieapp.RoomDatabase.dbModels.BookingWithDetails
+import com.example.movieapp.RoomDatabase.dbModels.LocalUserTickets
 
 import com.example.movieapp.RoomDatabase.dbModels.Movie
 import com.example.movieapp.RoomDatabase.dbModels.Seat
@@ -43,6 +44,9 @@ interface TheaterDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(theater: Theater):Long
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertAll(theater: List<Theater>) : List<Long>
+
     @Query("SELECT * FROM theaters")
     suspend fun getAllTheaters(): List<Theater>
 
@@ -51,13 +55,16 @@ interface TheaterDao {
 
     @Query(" Update theaters set isAvailable=:isAvailable where theaterId=:theaterId")
     suspend fun updateTheaterAvailability(theaterId: Int, isAvailable: Boolean)
+
+    @Query("Select Count(*) from theaters")
+    suspend fun getTotalCount():Int
 }
 
 //Show Dao
 @Dao
 interface ShowTimeDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(showTime: ShowTime)
+    suspend fun insert(showTime: ShowTime):Long
 
     @Query("SELECT * from `show_times ` where movieId=:movieId")
     suspend fun getShowsForMovie(movieId: Int): List<ShowTime>
@@ -65,7 +72,7 @@ interface ShowTimeDao {
    @Query("Select * from `show_times ` where theaterId=:theaterId And date=:date And startTime=:startTime")
     suspend fun isSlotAvailable(theaterId: Int, date: String, startTime: String): ShowTime?
 
-    @Query("Select * from `show_times ` where theaterId=:theaterId and dayOfWeek=:day")
+    @Query("Select * from `show_times ` where theaterId=:theaterId and date=:day")
     suspend fun getShowsForTheaterAndDay(theaterId: Long , day : String ): List<ShowTime>
 }
 
@@ -75,11 +82,11 @@ interface SeatDao {
     suspend fun insert(seat: Seat)
 
     @Insert
-    suspend fun insertAll(seats: List<Seat>)
+    suspend fun insertAll(seats: List<Seat>):List<Long>
 
 
     @Transaction
-    @Query("SELECT * FROM seats WHERE seatId = :seatId AND isBooked = 0 ")
+    @Query("SELECT * FROM seats WHERE seatId = :seatId AND booked = 0 ")
     suspend fun lockSeatForBooking(seatId: Long): Seat?
 
     @Query("SELECT * FROM seats WHERE theaterId = :theaterId")
@@ -101,7 +108,7 @@ interface  BookingDao {
     suspend fun getBookedSeatsForShow(showId: Long): List<Long>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertBooking(booking: Booking)
+    suspend fun insertBooking(booking: Booking):Long
 
     @Query("SELECT COUNT(*) FROM bookings WHERE showTimeId = :showId")
     suspend fun getBookedSeatsCount(showId: Long): Long
@@ -170,6 +177,15 @@ interface AuthDao{
 }
 
 
+@Dao
+interface LocalUserTicketDao{
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun inserTicket(localUserTickets: LocalUserTickets)
+
+
+    @Query("SELECT * FROM LocalUserTickets ORDER BY ticketId DESC")
+    fun getAllLocalTickets(): Flow<List<LocalUserTickets>>
+}
 
 
 

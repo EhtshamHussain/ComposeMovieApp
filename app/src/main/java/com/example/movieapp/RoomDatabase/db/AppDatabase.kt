@@ -4,10 +4,14 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverter
+import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.movieapp.Converters
 import com.example.movieapp.RoomDatabase.Dao.AuthDao
 import com.example.movieapp.RoomDatabase.Dao.BookingDao
+import com.example.movieapp.RoomDatabase.Dao.LocalUserTicketDao
 import com.example.movieapp.RoomDatabase.Dao.MovieDao
 import com.example.movieapp.RoomDatabase.Dao.SeatDao
 import com.example.movieapp.RoomDatabase.Dao.ShowTimeDao
@@ -15,6 +19,7 @@ import com.example.movieapp.RoomDatabase.Dao.TheaterDao
 import com.example.movieapp.RoomDatabase.Dao.movieTheaterDao
 import com.example.movieapp.RoomDatabase.dbModels.Authentication
 import com.example.movieapp.RoomDatabase.dbModels.Booking
+import com.example.movieapp.RoomDatabase.dbModels.LocalUserTickets
 import com.example.movieapp.RoomDatabase.dbModels.Movie
 import com.example.movieapp.RoomDatabase.dbModels.Seat
 import com.example.movieapp.RoomDatabase.dbModels.ShowTime
@@ -23,10 +28,11 @@ import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.internal.synchronized
 
 @Database(
-    entities = [Movie::class, Theater::class, ShowTime::class, Seat::class, Booking::class, Authentication::class],
-    version = 7,
+    entities = [Movie::class, Theater::class, ShowTime::class, Seat::class, Booking::class, Authentication::class, LocalUserTickets::class],
+    version = 12,
     exportSchema = false
 )
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun movieDao(): MovieDao
     abstract fun theaterDao(): TheaterDao
@@ -35,6 +41,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun bookingDao(): BookingDao
     abstract fun movieTheaterDao():movieTheaterDao
     abstract fun authDao(): AuthDao
+    abstract fun LocalUserTicketDao() :LocalUserTicketDao
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null

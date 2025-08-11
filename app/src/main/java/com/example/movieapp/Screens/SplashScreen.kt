@@ -48,6 +48,7 @@ fun SplashScreen(navController: NavController,viewModel: MovieViewModel) {
 
     LaunchedEffect(Unit) {
         delay(4000)
+//        viewModel.insertTheaterFromFirebase()
         if (authPreference.isUserLoggedIn()) {
             navController.navigate("Main") {
                 popUpTo("Splash") { inclusive = true }

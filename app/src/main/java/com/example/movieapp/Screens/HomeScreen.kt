@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusModifier
@@ -31,12 +32,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.movieapp.MovieViewModel
 
 @Composable
 fun HomeScreen(navController: NavController, viewModel: MovieViewModel) {
     LaunchedEffect(Unit) {
+//        viewModel.repository.createNewTheater()
         viewModel.loadUserOnAppState()
     }
     Scaffold() { innerpadding ->
@@ -106,6 +109,7 @@ fun HomeScreen(navController: NavController, viewModel: MovieViewModel) {
                 }
 
                 Spacer(modifier = Modifier.padding(top = 24.dp))
+
                 ChooseMovie(navController, viewModel)
             }
 
@@ -113,4 +117,3 @@ fun HomeScreen(navController: NavController, viewModel: MovieViewModel) {
         }
     }
 }
-

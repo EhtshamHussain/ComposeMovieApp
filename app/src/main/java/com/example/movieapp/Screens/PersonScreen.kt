@@ -99,25 +99,25 @@ fun PersonScreen(navController: NavController, viewModel: MovieViewModel) {
 //                            .padding(top = 24.dp)
                             .width(17.dp))
                         Text(
-                            text = user.email, color = Color.White, fontFamily = poppins,
+                            text = user.email.toString(), color = Color.White, fontFamily = poppins,
                             modifier = Modifier.padding(end = 24.dp)
                         )
                         Spacer(modifier = Modifier.padding(top = 24.dp))
                     }
-                    Spacer(modifier = Modifier.padding(top = 24.dp))
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(start = 20.dp),
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        Text("Password:", color = Color.White, fontFamily = poppins)
-                        Spacer(modifier = Modifier
-                            .width(17.dp))
-                        Text(
-                            text = user.password, color = Color.White, fontFamily = poppins,
-                        )
-                    }
+//                    Spacer(modifier = Modifier.padding(top = 24.dp))
+//                    Row(
+//                        Modifier
+//                            .fillMaxWidth()
+//                            .padding(start = 20.dp),
+//                        horizontalArrangement = Arrangement.Start
+//                    ) {
+//                        Text("Password:", color = Color.White, fontFamily = poppins)
+//                        Spacer(modifier = Modifier
+//                            .width(17.dp))
+//                        Text(
+//                            text = user.password, color = Color.White, fontFamily = poppins,
+//                        )
+//                    }
                 }
                 Spacer(modifier = Modifier.height(30.dp))
                 Button(
@@ -143,7 +143,7 @@ fun PersonScreen(navController: NavController, viewModel: MovieViewModel) {
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
                 ) {
                     Text(
-                        "LogOut",
+                        "Log Out",
                         color = Color.White
                     )
                 }

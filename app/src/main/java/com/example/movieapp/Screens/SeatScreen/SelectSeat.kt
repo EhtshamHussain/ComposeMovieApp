@@ -60,10 +60,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.movieapp.MovieViewModel
 import com.example.movieapp.R
 import com.example.movieapp.RoomDatabase.dbModels.Seat
+import com.example.movieapp.RoomDatabase.dbModels.SeatUI
 import com.example.movieapp.RoomDatabase.dbModels.Ticket
 import com.example.movieapp.ui.theme.poppins
 import java.text.ParseException
@@ -83,19 +85,23 @@ fun SelectSeaat(
     val bookingCompleted by viewModel.bookingCompleted.collectAsState()
 
     val context = LocalContext.current
-    val seats by viewModel.seats
+//    val seats by viewModel.seats
+    val seats by viewModel.seatsUI
 
     val selectedSeats = viewModel.selectedSeats
     val currentShow by viewModel.currentShowTime
-    Log.d("showid", "showId: ${showId}")
+    val user = viewModel.userDetail.value
+    val userId = user?.email.toString()
+
 
     LaunchedEffect(Unit) {
         if (showId != 0L) {
+            Log.d("seats", "SelectSeaat: ${seats}")
             Log.d("showid", "showId: ${showId}")
             viewModel.loadSeatsForShow(showId)
         }
     }
-
+    Log.d("seats", "SelectSeaat: ${seats}")
 
 
 
@@ -188,11 +194,18 @@ fun SelectSeaat(
                 )
                 Spacer(modifier = Modifier.padding(bottom = 5.dp))
 
-                SeatLayout(seats = seats, selectedSeats = selectedSeats, onSeatClick = { seatId ->
-                    viewModel.toggleSeatSelection(seatId)
-                }, showToast = { message ->
-                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                })
+                SeatLayout(
+                    seats = seats,
+                    selectedSeats = selectedSeats,
+                    onSeatClick = { seatId ->
+                        viewModel.toggleSeatSelection(seatId)
+                        {
+                            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    showToast = { message ->
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    })
 
                 Spacer(modifier = Modifier.padding(top = 20.dp))
 
@@ -315,8 +328,8 @@ fun SelectSeaat(
                     verticalArrangement = Arrangement.Bottom
 
                 ) {
-                    key(selectedSeats, seats) {
-                        BuySummaryCard(
+//                    key(selectedSeats, seats) {
+                    BuySummaryCard(
                             date = date,
                             time = time,
                             section = sectionType,
@@ -335,7 +348,7 @@ fun SelectSeaat(
                             }
 
                         )
-                    }
+//                    }
                 }
                 LaunchedEffect(bookingCompleted) {
                     if (bookingCompleted) {
@@ -354,7 +367,8 @@ fun SelectSeaat(
 
 @Composable
 fun SeatLayout(
-    seats: List<Seat>,
+//    seats: List<Seat>,
+    seats: List<SeatUI>,
     selectedSeats: List<Long>,
     onSeatClick: (Long) -> Unit,
     showToast: (String) -> Unit,
@@ -408,7 +422,8 @@ fun SeatLayout(
     )
 
     // Create rows with boundary checks
-    val seatRows = mutableListOf<List<Seat>>()
+//    val seatRows = mutableListOf<List<Seat>>()
+    val seatRows = mutableListOf<List<SeatUI>>()
     var currentIndex = 0
 
     for ((rowSize, _) in rowConfigs) {
@@ -440,9 +455,14 @@ fun SeatLayout(
                         Spacer(modifier = Modifier.height(45.dp))
                     }
                     val isSelected = selectedSeats.contains(seat.seatId)
+                    Log.d(
+                        "SeatLayout",
+                        "Seat ${seat.seatId} selected: $isSelected, Color: ${if (isSelected) "Green" else "Red"}"
+                    )
                     val color = when {
                         seat.isBooked -> Color.White
                         isSelected -> Color(0xFF60FFCA) // Green
+                        seat.isLockedByOther -> Color.Yellow
                         else -> Color(0xFFB6116B)      // Red
                     }
 
@@ -457,14 +477,14 @@ fun SeatLayout(
                             modifier = Modifier
                                 .size(30.dp)
                                 .clickable {
-                                    if (seat.isBooked) {
-                                        showToast("Seat already booked!")
-                                    } else {
+                                    if (seat.isBooked || seat.isLockedByOther) {
+                                        showToast("Seat is unavailable")
+                                    }else {
                                         onSeatClick(seat.seatId)
                                     }
                                 })
 
-//                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 //                        Text(
 //                            text = "${seat.seatNumber}",
 //                            color = Color.White,
@@ -476,6 +496,7 @@ fun SeatLayout(
         }
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun SelectionGuidence() {
@@ -514,44 +535,7 @@ fun SelectionGuidence() {
     }
 }
 
-//fun SelectionGuidence() {
-//    Row(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(start = 20.dp, end = 20.dp),
-//        horizontalArrangement = Arrangement.Center
-//    ) {
-//        Card(
-//            Modifier.size(10.dp)
-//                .fillMaxWidth(),
-//            colors = CardDefaults.cardColors(containerColor = Color.White),
-//            shape = CircleShape,
-//        ) {
-//
-//        }
-//        Spacer(modifier = Modifier.width(10.dp))
-//        Text("Reserved", color = Color.Gray)
-//
-//        Spacer(modifier = Modifier.width(20.dp))
-//        Card(
-//            Modifier.size(10.dp),
-//            colors = CardDefaults.cardColors(containerColor = Color(0xFFB6116B)),
-//            shape = CircleShape
-//        ) {}
-//        Spacer(modifier = Modifier.width(10.dp))
-//        Text("Available", color = Color.Gray)
-//
-//        Spacer(modifier = Modifier.width(20.dp))
-//        Card(
-//            Modifier.size(10.dp),
-//            colors = CardDefaults.cardColors(containerColor = Color(0xFF60FFCA)),
-//            shape = CircleShape
-//        ) {}
-//        Spacer(modifier = Modifier.width(10.dp))
-//        Text("Selected", color = Color.Gray)
-//    }
-//
-//}
+
 
 
 @Composable
@@ -627,9 +611,9 @@ fun BuySummaryCard(
                                 seatChunk.forEach { seat ->
                                     val allVip = seat == vip.last()
                                     Text(
-                                        text = if(allVip) "$seat" else "$seat,",
+                                        text = if (allVip) "$seat" else "$seat,",
                                         color = Color.White,
-                                        modifier = Modifier.padding(start = 5.dp , end = 4.dp)
+                                        modifier = Modifier.padding(start = 5.dp, end = 4.dp)
                                     )
                                 }
                             }
@@ -661,9 +645,9 @@ fun BuySummaryCard(
                                 seatChunk.forEach { seat ->
                                     val allRegular = seat == regular.last()
                                     Text(
-                                        text = if(allRegular) "$seat" else "$seat,",
+                                        text = if (allRegular) "$seat" else "$seat,",
                                         color = Color.White,
-                                        modifier = Modifier.padding(start=5.dp,end = 4.dp)
+                                        modifier = Modifier.padding(start = 5.dp, end = 4.dp)
                                     )
                                 }
                             }
@@ -787,3 +771,44 @@ fun BuySummaryCard(
 //
 //                    }
 //                }
+
+
+
+//fun SelectionGuidence() {
+//    Row(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(start = 20.dp, end = 20.dp),
+//        horizontalArrangement = Arrangement.Center
+//    ) {
+//        Card(
+//            Modifier.size(10.dp)
+//                .fillMaxWidth(),
+//            colors = CardDefaults.cardColors(containerColor = Color.White),
+//            shape = CircleShape,
+//        ) {
+//
+//        }
+//        Spacer(modifier = Modifier.width(10.dp))
+//        Text("Reserved", color = Color.Gray)
+//
+//        Spacer(modifier = Modifier.width(20.dp))
+//        Card(
+//            Modifier.size(10.dp),
+//            colors = CardDefaults.cardColors(containerColor = Color(0xFFB6116B)),
+//            shape = CircleShape
+//        ) {}
+//        Spacer(modifier = Modifier.width(10.dp))
+//        Text("Available", color = Color.Gray)
+//
+//        Spacer(modifier = Modifier.width(20.dp))
+//        Card(
+//            Modifier.size(10.dp),
+//            colors = CardDefaults.cardColors(containerColor = Color(0xFF60FFCA)),
+//            shape = CircleShape
+//        ) {}
+//        Spacer(modifier = Modifier.width(10.dp))
+//        Text("Selected", color = Color.Gray)
+//    }
+//
+//}

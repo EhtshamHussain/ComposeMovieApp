@@ -21,6 +21,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,13 +52,14 @@ import kotlinx.coroutines.flow.Flow
 @Composable
 fun ChooseMovie(navController: NavController, viewModel: MovieViewModel) {
 //    val viewModel: MovieViewModel = viewModel
-
+//    val hasRunOnce = rememberSaveable { mutableStateOf(false) }
 
 //    LaunchedEffect(Unit) {
 //        val currentDate = java.time.LocalDate.now().toString()
 //        val time = java.time.LocalTime.now().toString()
 //        viewModel.deletePastBookings(currentDate , time)
 //    }
+
 
     LazyColumn() {
         // Trending Movies Section
@@ -72,7 +75,7 @@ fun ChooseMovie(navController: NavController, viewModel: MovieViewModel) {
                     .padding(start = 20.dp),
             )
             MovieList(
-                movies = viewModel.trendingMovies,
+                movies = viewModel.notPlaying,
                 onClick = { movie ->
                     val movieJson = Uri.encode(Gson().toJson(movie))
                     navController.navigate("choose_movie/$movieJson")
@@ -95,7 +98,7 @@ fun ChooseMovie(navController: NavController, viewModel: MovieViewModel) {
 
                 )
             MovieList(
-                movies = viewModel.popularMovies,
+                movies = viewModel.upComing,
                 onClick = { movie ->
                     val movieJson = Uri.encode(Gson().toJson(movie))
                     navController.navigate("choose_movie/$movieJson")
@@ -117,7 +120,7 @@ fun ChooseMovie(navController: NavController, viewModel: MovieViewModel) {
                     .padding(start = 20.dp),
             )
             MovieList(
-                movies = viewModel.topRatedMovies,
+                movies = viewModel.trendingMovies,
                 onClick = { movie ->
                     val movieJson = Uri.encode(Gson().toJson(movie))
                     navController.navigate("choose_movie/$movieJson")

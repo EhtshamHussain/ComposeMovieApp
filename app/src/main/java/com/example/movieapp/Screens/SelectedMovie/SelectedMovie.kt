@@ -69,6 +69,7 @@ fun SelectedMovieScreen(navController: NavController, movie: Movie, viewModel: M
     )
 
     LaunchedEffect(Unit) {
+
         viewModel.initializeSelectedMovie(movies)
 
     }
@@ -203,6 +204,7 @@ fun SelectedMovieScreen(navController: NavController, movie: Movie, viewModel: M
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
+
                 ZigZagScrollList(viewModel, navController) { selectedShowId ->
                     if (selectedShowId != null) {
                         viewModel.selectShowId = selectedShowId.showId

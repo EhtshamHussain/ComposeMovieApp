@@ -67,6 +67,7 @@ class MainActivity : ComponentActivity() {
             database.movieTheaterDao(),
             database.authDao(),
             authPrefs = AuthPreference(context = this),
+            database.LocalUserTicketDao(),
         )
         CoroutineScope(Dispatchers.IO).launch {
             initializeSampleData()
@@ -89,144 +90,150 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-
         }
-    }
+        }
+
+
+
+
 
 
     private suspend fun initializeSampleData() {
 // Create 2 theaters
-        val theater1Id = repository.createNewTheater()
-        val theater2Id = repository.createNewTheater()
 
-        val movies = listOf(
-            Movie(movieId = 1, title = "Avengers", posterUrl = ""),
-            Movie(movieId = 2, title = "Spider-Man", posterUrl = ""),
-            Movie(movieId = 3, title = "Batman", posterUrl = "")
-        )
-        movies.forEach { movie ->
-            repository.movieDao.insertMovie(movie)
-            repository.scheduleMovieShows(movie)
-
+        for(i in 1..20) {
+            repository.createNewTheater()
         }
+
+//        val movies = listOf(
+//            Movie(movieId = 1, title = "Avengers", posterUrl = ""),
+//            Movie(movieId = 2, title = "Spider-Man", posterUrl = ""),
+//            Movie(movieId = 3, title = "Batman", posterUrl = "")
+//        )
+//        movies.forEach { movie ->
+//            repository.movieDao.insertMovie(movie)
+//            repository.scheduleMovieShows(movie)
+//
+//        }
     }
 }
 
-@Composable
-fun MainScreen(viewModel: MovieViewModel) {
-    val movies by viewModel.movies.collectAsState(initial = emptyList())
-    val selectedMovie by viewModel.selectedMovie
-    val showTimes by viewModel.showTimes
-    val seats by viewModel.seats
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        // Movie List Section
-        Text("Available Movies", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
-
-        LazyColumn(modifier = Modifier.weight(1f)) {
-            items(movies) { movie ->
-                MovieCard(movie) {
-                    viewModel.selectMovie(movie)
-                }
-            }
-        }
-
-
-        // Show Times Section
-        if (selectedMovie != null) {
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
-            Text(
-                "Show Times for: ${selectedMovie?.title}",
-                style = MaterialTheme.typography.headlineSmall
-            )
-            if (showTimes.isEmpty()) {
-                Text("Loading shows...", modifier = Modifier.padding(8.dp))
-            } else {
-                LazyColumn(modifier = Modifier.weight(1f)) {
-                    items(showTimes) { show ->
-                        ShowTimeCard(show) {
-                            viewModel.loadSeatsForShow(show.showId)
-                        }
-                    }
-                }
-            }
-        }
-        // Seat Selection Section
-        if (seats.isNotEmpty()) {
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
-            Text("Available Seats", style = MaterialTheme.typography.headlineSmall)
-            SeatMap(seats) { seat ->
-                showTimes.firstOrNull()?.let { show ->
-//                    viewModel.("user_123", show.showId, seat.seatId)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun MovieCard(movie: Movie, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(4.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(movie.title, style = MaterialTheme.typography.titleLarge)
-            Text("Duration: ${movie.duration} min", style = MaterialTheme.typography.bodyMedium)
-        }
-    }
-}
-
-@Composable
-fun ShowTimeCard(show: ShowTime, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(4.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("${show.date}  ${show.startTime}", fontWeight = FontWeight.Bold)
-            Text("Theater: ${show.theaterId}")
-            Text("Ends: ${show.endTime}")
-        }
-    }
-}
-
-@Composable
-fun SeatMap(seats: List<Seat>, onSeatSelected: (Seat) -> Unit) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(7),
-        modifier = Modifier.height(300.dp)
-    ) {
-        items(seats) { seat ->
-            val color = when {
-                seat.isBooked -> Color.Red
-                seat.section == "VIP" -> Color.Yellow
-                else -> Color.LightGray
-            }
-
-            Box(
-                modifier = Modifier
-                    .padding(4.dp)
-                    .aspectRatio(1f)
-                    .background(color)
-                    .border(1.dp, Color.DarkGray)
-                    .clickable(enabled = !seat.isBooked) {
-                        onSeatSelected(seat)
-                    }
-            ) {
-                Text(
-                    text = seat.seatNumber.toString(),
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
-        }
-    }
-}
+//@Composable
+//fun MainScreen(viewModel: MovieViewModel) {
+//    val movies by viewModel.movies.collectAsState(initial = emptyList())
+//    val selectedMovie by viewModel.selectedMovie
+//    val showTimes by viewModel.showTimes
+//    val seats by viewModel.seats
+//
+//    Column(modifier = Modifier.padding(16.dp)) {
+//        // Movie List Section
+//        Text("Available Movies", style = MaterialTheme.typography.headlineMedium)
+//        Spacer(modifier = Modifier.height(16.dp))
+//
+//        LazyColumn(modifier = Modifier.weight(1f)) {
+//            items(movies) { movie ->
+//                MovieCard(movie) {
+//                    viewModel.selectMovie(movie)
+//                }
+//            }
+//        }
+//
+//
+//        // Show Times Section
+//        if (selectedMovie != null) {
+//            Divider(modifier = Modifier.padding(vertical = 8.dp))
+//            Text(
+//                "Show Times for: ${selectedMovie?.title}",
+//                style = MaterialTheme.typography.headlineSmall
+//            )
+//            if (showTimes.isEmpty()) {
+//                Text("Loading shows...", modifier = Modifier.padding(8.dp))
+//            } else {
+//                LazyColumn(modifier = Modifier.weight(1f)) {
+//                    items(showTimes) { show ->
+//                        ShowTimeCard(show) {
+//                            viewModel.loadSeatsForShow(show.showId)
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        // Seat Selection Section
+//        if (seats.isNotEmpty()) {
+//            Divider(modifier = Modifier.padding(vertical = 8.dp))
+//            Text("Available Seats", style = MaterialTheme.typography.headlineSmall)
+//            SeatMap(seats) { seat ->
+//                showTimes.firstOrNull()?.let { show ->
+////                    viewModel.("user_123", show.showId, seat.seatId)
+//                }
+//            }
+//        }
+//    }
+//}
+//
+//@Composable
+//fun MovieCard(movie: Movie, onClick: () -> Unit) {
+//    Card(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(8.dp)
+//            .clickable(onClick = onClick),
+//        elevation = CardDefaults.cardElevation(4.dp)
+//    ) {
+//        Column(modifier = Modifier.padding(16.dp)) {
+//            Text(movie.title, style = MaterialTheme.typography.titleLarge)
+//            Text("Duration: ${movie.duration} min", style = MaterialTheme.typography.bodyMedium)
+//        }
+//    }
+//}
+//
+//@Composable
+//fun ShowTimeCard(show: ShowTime, onClick: () -> Unit) {
+//    Card(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(8.dp)
+//            .clickable(onClick = onClick),
+//        elevation = CardDefaults.cardElevation(4.dp)
+//    ) {
+//        Column(modifier = Modifier.padding(16.dp)) {
+//            Text("${show.date}  ${show.startTime}", fontWeight = FontWeight.Bold)
+//            Text("Theater: ${show.theaterId}")
+//            Text("Ends: ${show.endTime}")
+//        }
+//    }
+//}
+//
+//@Composable
+//fun SeatMap(seats: List<Seat>, onSeatSelected: (Seat) -> Unit) {
+//    LazyVerticalGrid(
+//        columns = GridCells.Fixed(7),
+//        modifier = Modifier.height(300.dp)
+//    ) {
+//        items(seats) { seat ->
+//            val color = when {
+//                seat.isBooked -> Color.Red
+//                seat.section == "VIP" -> Color.Yellow
+//                else -> Color.LightGray
+//            }
+//
+//            Box(
+//                modifier = Modifier
+//                    .padding(4.dp)
+//                    .aspectRatio(1f)
+//                    .background(color)
+//                    .border(1.dp, Color.DarkGray)
+//                    .clickable(enabled = !seat.isBooked) {
+//                        onSeatSelected(seat)
+//                    }
+//            ) {
+//                Text(
+//                    text = seat.seatNumber.toString(),
+//                    modifier = Modifier.align(Alignment.Center)
+//                )
+//            }
+//        }
+//    }
+//}
 
