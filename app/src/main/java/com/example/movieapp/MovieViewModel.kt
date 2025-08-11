@@ -50,7 +50,7 @@ class MovieViewModel(
 
 
     //FIREBASE INSTANCES
-    //firebase instance
+
     private val firebaseAuth = FirebaseAuth.getInstance()
 
     //firebase Firestore Database
@@ -346,18 +346,12 @@ class MovieViewModel(
 
                             repository.localUserTickets.inserTicket(localTicket)
                             _isLoading.value = false
-//                            localTickets.add(localTicket)
-//                            ticket
 
                         }
-//
+
                     }
                 }
             }
-
-
-//            _LocalUserTickets.value = localTickets.reversed()
-//            _userTickets.value = tickets.reversed()
 
 
         }
@@ -401,13 +395,6 @@ class MovieViewModel(
         }
     }
 
-//    fun createTheaters(){
-//        viewModelScope.launch {
-//            repository.createNewTheater()
-//        }
-//    }
-
-
     fun loadSeatsForShow(showTimeId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -433,34 +420,12 @@ class MovieViewModel(
                     return@launch
                 } else {
                     _currentShowTime.value = show
-//                    var allSeats = repository.seatDao.getSeatsForTheater(show.theaterId)
+
 
                     var allSeats = repository.getSeatsForTheaterFromFirestore(show.theaterId)
 
                     Log.d("SeatsLoaded", "Loaded seats: ${allSeats.size}")
 
-//                    if (allSeats.size != 49) {
-//
-//                        val newSeats = (1..49).map { seatNum ->
-//                            Seat(
-////                                seatId = seatNum.toLong(),
-//                                theaterId = show.theaterId,
-//                                seatNumber = seatNum,
-//                                section = if (seatNum <= 15) "VIP" else "Regular"
-//                            )
-//                        }
-//                        repository.addSeatsToFirestore(newSeats)
-//                        repository.seatDao.insertAll(newSeats)
-//                        allSeats = newSeats
-//                    }
-//                    val bookedSeats = try {
-
-//                        repository.bookingDao.getBookedSeatsForShow(showTimeId)
-//                        repository.getBookedSeatsFromFirestore(showTimeId)
-//                    }
-//                    catch (e: Exception) {
-//                        emptyList<Long>()
-//                    }
                     val bookedSeats = repository.getBookedSeatsFromFirestore(showTimeId)
                     val lockedSeatsSnapshot = firestore.collection("lockedSeats")
                         .whereEqualTo("showTimeId", showTimeId)
@@ -496,9 +461,6 @@ class MovieViewModel(
                         )
                     }
 
-//                    _seatsUI.value = allSeats.map { seat ->
-//                        seat.copy(isBooked = bookedSeats.contains(seat.seatId))
-//                    }
                 }
             } catch (e: Exception) {
                 Log.e("loadSeats", "Error loading seats", e)
@@ -567,57 +529,6 @@ class MovieViewModel(
             }
         }
     }
-
-//
-//    fun bookSelectedSeats(userId: String) {
-//        viewModelScope.launch {
-//            try {
-//                val showId = _currentShowTime.value?.showId ?: return@launch
-//
-//                _selectedSeats.value.forEach { seatId ->
-//                    // Get seat details
-//                    val seat = _seats.value.firstOrNull { it.seatId == seatId } ?: return@forEach
-//
-//                    // Calculate price
-//                    val price = if (seat.section == "VIP") 15.0 else 10.0
-//
-//
-//                    // Create booking
-//                    val bookingId = System.currentTimeMillis()
-//
-//                    val booking = Booking(
-//                        bookingId = bookingId,
-//                        userId = userId,
-//                        showTimeId = showId,
-//                        seatId = seatId,
-//                        price = price
-//                    )
-//
-//                    // Save to database
-////                    val bookingId = repository.bookingDao.insertBooking(booking)
-//
-//                    firestore.collection("bookings")
-//                        .document(bookingId.toString())
-//                        .set(booking)
-//                        .await()
-//                    releaseSeatLock(seatId, showId)
-//
-//                    // Update local state
-////                    _seats.value = _seats.value.map {
-////                        if (it.seatId == seatId) it.copy(booked = true) else it
-////                    }
-//                }
-//
-//                // ✅ Clear selected seats after booking
-//                _selectedSeats.value = emptyList()
-//                _bookingCompleted.value = true
-//                loadUserTickets(userId)
-//
-//            } catch (e: Exception) {
-//                Log.e("BookingError", e.message ?: "Booking failed")
-//            }
-//        }
-//    }
 
 
     // State reset of Booking
@@ -733,111 +644,3 @@ class Converters {
 }
 
 
-
-
-//
-//fun bookSelectedSeats(userId: String) {
-//    viewModelScope.launch {
-//        try {
-//            val showId = _currentShowTime.value?.showId ?: return@launch
-//
-//            _selectedSeats.value.forEach { seatId ->
-//                val seat = _seats.value.firstOrNull { it.seatId == seatId } ?: return@forEach
-//                val price = if (seat.section == "VIP") 15.0 else 10.0
-//                val bookingId = System.currentTimeMillis()
-//
-//                val booking = Booking(
-//                    bookingId = bookingId,
-//                    userId = userId,
-//                    showTimeId = showId,
-//                    seatId = seatId,
-//                    price = price
-//                )
-//
-//                val seatLockedRef = firestore.collection("lockedSeats")
-//                    .document("${showId}_$seatId")
-//                val bookingRef = firestore.collection("bookings")
-//                    .document(bookingId.toString())
-//
-//                // 🔹 Transaction to ensure atomic lock + booking
-//                firestore.runTransaction { transaction ->
-//                    val lockSnapshot = transaction.get(seatLockedRef)
-//                    if (lockSnapshot.exists()) {
-//                        throw Exception("Seat $seatId is already locked/booked.")
-//                    }
-//
-//                    // Lock the seat
-//                    transaction.set(
-//                        seatLockedRef,
-//                        mapOf(
-//                            "lockedBy" to userId,
-//                            "timestamp" to System.currentTimeMillis()
-//                        )
-//                    )
-//
-//                    // Save booking
-//                    transaction.set(bookingRef, booking)
-//                }
-//                    .addOnSuccessListener {
-//                        Log.d("Booking", "Seat $seatId booked successfully")
-//                        // Update UI state immediately
-//                        _seats.value = _seats.value.map {
-//                            if (it.seatId == seatId) it.copy(booked = true) else it
-//                        }
-//                    }
-//                    .addOnFailureListener { e ->
-//                        Log.e("Booking", "Failed to book seat $seatId: ${e.message}")
-//                    }
-//            }
-//
-//            // ✅ Clear selection and reload tickets
-//            _selectedSeats.value = emptyList()
-//            _bookingCompleted.value = true
-//            loadUserTickets(userId)
-//
-//        } catch (e: Exception) {
-//            Log.e("BookingError", e.message ?: "Booking failed")
-//        }
-//    }
-//}
-//
-
-
-
-
-
-//    fun toggleSeatSelection(seatId: Long, userId: String , toast : (String) -> Unit) {
-//        viewModelScope.launch {
-//            val showId = _currentShowTime.value?.showId ?: return@launch
-//            Log.d("SeatSelection", "Toggling seat: $seatId")
-//            val seat = _seats.value.firstOrNull { it.seatId == seatId }
-//            if (seat?.booked == true) return@launch
-//            Log.d("SeatSelection", "Before update: ${_selectedSeats.value}")
-//
-//
-////            _selectedSeats.value = if (_selectedSeats.value.contains(seatId)) {
-////                _selectedSeats.value - seatId
-////            } else {
-////                _selectedSeats.value + seatId
-////            }
-//
-//            if (_selectedSeats.value.contains(seatId)) {
-//                releaseSeatLock(seatId, showId)
-//                _selectedSeats.value = _selectedSeats.value - seatId
-//                return@launch
-//            }
-//            val locked = lockSeat(userId, seatId, showId)
-//            if(locked){
-//                _selectedSeats.value = _selectedSeats.value + seatId
-//            } else {
-//                Log.d("SeatSelection", "Seat is already locked by another user.")
-//                toast("Seat is already locked by another user.")
-//
-//            }
-//
-//
-//
-//            Log.d("SeatSelection", "After update: ${_selectedSeats.value}")
-//        }
-//
-//    }

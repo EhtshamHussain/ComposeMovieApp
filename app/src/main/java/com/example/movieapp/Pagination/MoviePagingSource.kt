@@ -41,8 +41,3 @@ class MoviePagingSource(
     }
 
 }
-
-
-//                "popular" -> RetrofitInstance.api.getPopularMovies(apiKey, page)
-//                "top_rated" -> RetrofitInstance.api.getTopRatedMovies(apiKey, page)
-//                else -> RetrofitInstance.api.getTrendingMovies(apiKey, page)
